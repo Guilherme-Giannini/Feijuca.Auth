@@ -1,27 +1,26 @@
-﻿using Feijuca.Auth.Infra.CrossCutting.Config;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.Configuration;
+using Feijuca.Auth.Infra.CrossCutting.Models;
 
 namespace Feijuca.Auth.Infra.CrossCutting.Extensions
 {
     public static class ConfigurationBuilderExtensions
     {
-        public static MongoSettings GetApplicationSettings(this IConfiguration configuration, IHostEnvironment env)
-        {
-            var settings = configuration.GetSection("MongoSettings").Get<MongoSettings>()!;
 
-            if (!env.IsDevelopment())
-            {
-                settings.ConnectionString = GetEnvironmentVariables("Feijuca_ConnectionString");
-                settings.DatabaseName = GetEnvironmentVariables("Feijuca_DatabaseName");
-            }
+        public static Settings ApplyEnvironmentOverridesToSettings(this IConfiguration configuration)
+        {
+            var settings = configuration.GetSection("Settings").Get<Settings>()!;
+
+            settings.MongoSettings.ConnectionString = GetEnvOrDefault("Feijuca_ConnectionString", settings.MongoSettings.ConnectionString);
+            settings.MongoSettings.DatabaseName = GetEnvOrDefault("Feijuca_DatabaseName", settings.MongoSettings.DatabaseName);
+            settings.MltSettings!.OpenTelemetryColectorUrl = GetEnvOrDefault("OpenTelemetryColectorUrl", settings.MltSettings!.OpenTelemetryColectorUrl);
+            settings.MltSettings.Dsn = GetEnvOrDefault("SentrySettings_Dsn", settings.MltSettings.Dsn);
 
             return settings!;
         }
-
-        private static string GetEnvironmentVariables(string variableName)
+        private static string GetEnvOrDefault(string key, string? fallback)
         {
-            return Environment.GetEnvironmentVariable(variableName) ?? "";
+            var value = Environment.GetEnvironmentVariable(key);
+            return string.IsNullOrWhiteSpace(value) ? fallback ?? "" : value;
         }
     }
 }

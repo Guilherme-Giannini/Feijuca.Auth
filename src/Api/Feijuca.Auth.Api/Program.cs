@@ -2,8 +2,10 @@ using Feijuca.Auth.Extensions;
 using Feijuca.Auth.Infra.CrossCutting.Extensions;
 using Feijuca.Auth.Infra.CrossCutting.Middlewares;
 using Mattioli.Configurations.Extensions.Handlers;
+using Mattioli.Configurations.Extensions.Sentry;
 using Mattioli.Configurations.Transformers;
 using Scalar.AspNetCore;
+using Mattioli.Configurations.Extensions.Loggings;
 
 var builder = WebApplication.CreateBuilder(args);
 var enviroment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
@@ -13,7 +15,7 @@ builder.Configuration
     .AddJsonFile($"appsettings.{enviroment}.json", true, reloadOnChange: true)
     .AddEnvironmentVariables();
 
-var applicationSettings = builder.Configuration.GetApplicationSettings(builder.Environment);
+var applicationSettings = builder.Configuration.ApplyEnvironmentOverridesToSettings();
 
 builder.Services
     .AddExceptionHandler<GlobalExceptionHandler>()
@@ -23,7 +25,7 @@ builder.Services
     .AddValidators()
     .AddServices()
     .AddOpenApi("v1", options => { options.AddDocumentTransformer<BearerSecuritySchemeTransformer>(); })
-    .AddMongo(applicationSettings)
+    .AddMongo(applicationSettings.MongoSettings)
     .AddApiAuthentication(out Feijuca.Auth.Common.Models.KeycloakSettings KeycloakSettings)
     .AddEndpointsApiExplorer()
     .AddSwagger(KeycloakSettings)
@@ -40,6 +42,9 @@ builder.Services
         });
     })
     .AddControllers();
+
+builder.UseMltSentry(applicationSettings.MltSettings);
+builder.Host.UseSerilog(applicationSettings.MltSettings.OpenTelemetryColectorUrl, applicationSettings.MltSettings.ApplicationName, applicationSettings.SeqSettings.Url);
 
 var app = builder.Build();
 
