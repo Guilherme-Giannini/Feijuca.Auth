@@ -2,10 +2,9 @@ using Feijuca.Auth.Extensions;
 using Feijuca.Auth.Infra.CrossCutting.Extensions;
 using Feijuca.Auth.Infra.CrossCutting.Middlewares;
 using Mattioli.Configurations.Extensions.Handlers;
-using Mattioli.Configurations.Extensions.Sentry;
 using Mattioli.Configurations.Transformers;
 using Scalar.AspNetCore;
-using Mattioli.Configurations.Extensions.Loggings;
+using Mattioli.Configurations.Extensions.Telemetry;
 
 var builder = WebApplication.CreateBuilder(args);
 var enviroment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
@@ -30,6 +29,7 @@ builder.Services
     .AddEndpointsApiExplorer()
     .AddSwagger(KeycloakSettings)
     .AddHttpClients()
+    .AddOpenTelemetry(applicationSettings.MltSettings)
     .ConfigureValidationErrorResponses()
     .AddCors(options =>
     {
@@ -43,8 +43,10 @@ builder.Services
     })
     .AddControllers();
 
-builder.UseMltSentry(applicationSettings.MltSettings);
-builder.Host.UseSerilog(applicationSettings.MltSettings.OpenTelemetryColectorUrl, applicationSettings.MltSettings.ApplicationName, applicationSettings.SeqSettings.Url);
+var mlt = applicationSettings.MltSettings;
+var seq = applicationSettings.SeqSettings;
+
+builder.ConfigureTelemetryAndLogging(applicationSettings);
 
 var app = builder.Build();
 
