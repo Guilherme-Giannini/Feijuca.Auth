@@ -15,7 +15,7 @@ builder.Configuration
     .AddJsonFile($"appsettings.{enviroment}.json", true, reloadOnChange: true)
     .AddEnvironmentVariables();
 
-var applicationSettings = builder.Configuration.ApplyEnvironmentOverridesToSettings();
+var applicationSettings = builder.Configuration.ApplyEnvironmentOverridesToSettings(builder.Environment);
 
 builder.Services
     .AddExceptionHandler<GlobalExceptionHandler>()

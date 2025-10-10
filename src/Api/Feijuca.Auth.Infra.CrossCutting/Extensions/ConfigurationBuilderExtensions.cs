@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using Feijuca.Auth.Infra.CrossCutting.Models;
 
 namespace Feijuca.Auth.Infra.CrossCutting.Extensions
@@ -6,15 +7,19 @@ namespace Feijuca.Auth.Infra.CrossCutting.Extensions
     public static class ConfigurationBuilderExtensions
     {
 
-        public static Settings ApplyEnvironmentOverridesToSettings(this IConfiguration configuration)
+        public static Settings ApplyEnvironmentOverridesToSettings(this IConfiguration configuration, IHostEnvironment env)
         {
             var settings = configuration.GetSection("Settings").Get<Settings>();
 
-            settings!.MongoSettings.ConnectionString = GetEnvOrDefault("Feijuca_ConnectionString", settings.MongoSettings.ConnectionString);
-            settings.MongoSettings.DatabaseName = GetEnvOrDefault("Feijuca_DatabaseName", settings.MongoSettings.DatabaseName);
-            settings.MltSettings!.OpenTelemetryColectorUrl = GetEnvOrDefault("OpenTelemetryColectorUrl", settings.MltSettings!.OpenTelemetryColectorUrl);
-            settings.MltSettings.Dsn = GetEnvOrDefault("SentrySettings_Dsn", settings.MltSettings.Dsn);
+            if (!env.IsDevelopment())
+            {
 
+                settings!.MongoSettings.ConnectionString = GetEnvOrDefault("Feijuca_ConnectionString", settings.MongoSettings.ConnectionString);
+                settings.MongoSettings.DatabaseName = GetEnvOrDefault("Feijuca_DatabaseName", settings.MongoSettings.DatabaseName);
+                settings.MltSettings!.OpenTelemetryColectorUrl = GetEnvOrDefault("OpenTelemetryColectorUrl", settings.MltSettings!.OpenTelemetryColectorUrl);
+                settings.MltSettings.Dsn = GetEnvOrDefault("SentrySettings_Dsn", settings.MltSettings.Dsn);
+
+            }
             return settings!;
         }
         private static string GetEnvOrDefault(string key, string? fallback)
