@@ -8,9 +8,9 @@ namespace Feijuca.Auth.Infra.CrossCutting.Extensions
 
         public static Settings ApplyEnvironmentOverridesToSettings(this IConfiguration configuration)
         {
-            var settings = configuration.GetSection("Settings").Get<Settings>()!;
+            var settings = configuration.GetSection("Settings").Get<Settings>();
 
-            settings.MongoSettings.ConnectionString = GetEnvOrDefault("Feijuca_ConnectionString", settings.MongoSettings.ConnectionString);
+            settings!.MongoSettings.ConnectionString = GetEnvOrDefault("Feijuca_ConnectionString", settings.MongoSettings.ConnectionString);
             settings.MongoSettings.DatabaseName = GetEnvOrDefault("Feijuca_DatabaseName", settings.MongoSettings.DatabaseName);
             settings.MltSettings!.OpenTelemetryColectorUrl = GetEnvOrDefault("OpenTelemetryColectorUrl", settings.MltSettings!.OpenTelemetryColectorUrl);
             settings.MltSettings.Dsn = GetEnvOrDefault("SentrySettings_Dsn", settings.MltSettings.Dsn);
