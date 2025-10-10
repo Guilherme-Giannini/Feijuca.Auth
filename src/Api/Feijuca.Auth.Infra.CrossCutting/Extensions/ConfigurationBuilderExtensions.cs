@@ -6,7 +6,6 @@ namespace Feijuca.Auth.Infra.CrossCutting.Extensions
 {
     public static class ConfigurationBuilderExtensions
     {
-
         public static Settings ApplyEnvironmentOverridesToSettings(this IConfiguration configuration, IHostEnvironment env)
         {
             var settings = configuration.GetSection("Settings").Get<Settings>();

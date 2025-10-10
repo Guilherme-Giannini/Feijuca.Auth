@@ -24,10 +24,9 @@ namespace Feijuca.Auth.Infra.CrossCutting.Extensions
     {
         public static WebApplicationBuilder ConfigureTelemetryAndLogging(this WebApplicationBuilder builder, Settings applicationSettings)
         {
-            if (applicationSettings is null)
-                throw new ArgumentNullException(nameof(applicationSettings));
             var mlt = applicationSettings.MltSettings;
             var seq = applicationSettings.SeqSettings;
+
             if (mlt is null)
                 return builder;
 
