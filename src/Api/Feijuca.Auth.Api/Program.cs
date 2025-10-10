@@ -43,9 +43,6 @@ builder.Services
     })
     .AddControllers();
 
-var mlt = applicationSettings.MltSettings;
-var seq = applicationSettings.SeqSettings;
-
 builder.ConfigureTelemetryAndLogging(applicationSettings);
 
 var app = builder.Build();
