@@ -1,13 +1,11 @@
 ﻿using Feijuca.Auth.Common.Errors;
 using Mattioli.Configurations.Models;
 using Feijuca.Auth.Domain.Interfaces;
-using Feijuca.Auth.Services;
-
 using MediatR;
 
 namespace Feijuca.Auth.Application.Queries.UserAttributes
 {
-    public class GetUserAttributeQueryHandler(IUserRepository userRepository, ITenantService tenantService) : IRequestHandler<GetUserAttributeQuery, Result<Dictionary<string, string[]>>>
+    public class GetUserAttributeQueryHandler(IUserRepository userRepository) : IRequestHandler<GetUserAttributeQuery, Result<Dictionary<string, string[]>>>
     {
         private readonly IUserRepository _userRepository = userRepository;
 
