@@ -4,6 +4,8 @@ using Feijuca.Auth.Infra.CrossCutting.Middlewares;
 using Mattioli.Configurations.Extensions.Handlers;
 using Mattioli.Configurations.Transformers;
 using Scalar.AspNetCore;
+using Mattioli.Configurations.Extensions.Telemetry;
+using Feijuca.Auth.Common.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 var enviroment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
@@ -13,7 +15,7 @@ builder.Configuration
     .AddJsonFile($"appsettings.{enviroment}.json", true, reloadOnChange: true)
     .AddEnvironmentVariables();
 
-var applicationSettings = builder.Configuration.GetApplicationSettings(builder.Environment);
+var applicationSettings = builder.Configuration.ApplyEnvironmentOverridesToSettings(builder.Environment);
 
 builder.Services
     .AddExceptionHandler<GlobalExceptionHandler>()
@@ -24,11 +26,11 @@ builder.Services
     .AddServices()
     .AddHealthCheckers()
     .AddOpenApi("v1", options => { options.AddDocumentTransformer<BearerSecuritySchemeTransformer>(); })
-    .AddMongo(applicationSettings)
-    .AddApiAuthentication(out Feijuca.Auth.Common.Models.KeycloakSettings KeycloakSettings)
+    .AddMongo(applicationSettings.MongoSettings)
+    .AddApiAuthentication(out KeycloakSettings KeycloakSettings)
     .AddEndpointsApiExplorer()
     .AddSwagger(KeycloakSettings)
-    .AddHttpClients()
+    .AddHttpClients()    
     .ConfigureValidationErrorResponses()
     .AddCors(options =>
     {
@@ -41,6 +43,12 @@ builder.Services
         });
     })
     .AddControllers();
+
+if (!string.IsNullOrEmpty(applicationSettings.MltSettings.OpenTelemetryColectorUrl))
+{
+    builder.Services.AddOpenTelemetry(applicationSettings.MltSettings);
+    builder.ConfigureTelemetryAndLogging(applicationSettings);
+}
 
 var app = builder.Build();
 

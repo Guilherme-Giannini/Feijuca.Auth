@@ -1,10 +1,10 @@
 ﻿using Feijuca.Auth.Common.Errors;
-using Mattioli.Configurations.Models;
 using Feijuca.Auth.Domain.Entities;
 using Feijuca.Auth.Domain.Filters;
 using Feijuca.Auth.Domain.Interfaces;
 using Feijuca.Auth.Services;
 using Flurl;
+using Mattioli.Configurations.Models;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using System.Text;
@@ -14,8 +14,7 @@ namespace Feijuca.Auth.Infra.Data.Repositories
     public class UserRepository(IClientRepository clientRepository,
         IHttpClientFactory httpClientFactory,
         IAuthRepository authRepository,
-        ITenantService tenantService)
-        : BaseRepository(httpClientFactory), IUserRepository
+        ITenantService tenantService) : BaseRepository(httpClientFactory), IUserRepository
     {
         private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;
         private readonly IAuthRepository _authRepository = authRepository;
@@ -93,7 +92,7 @@ namespace Feijuca.Auth.Infra.Data.Repositories
             return Result<bool>.Failure(UserErrors.DeletionUserError);
         }
 
-        public async Task<Result<bool>> CreateAsync(string tenant, User user, CancellationToken cancellationToken)
+        public async Task<Result<bool>> CreateAsync(User user, CancellationToken cancellationToken)
         {
             var tokenDetails = await _authRepository.GetAccessTokenAsync(cancellationToken);
             using var httpClient = CreateHttpClientWithHeaders(tokenDetails.Data.Access_Token);
@@ -101,9 +100,9 @@ namespace Feijuca.Auth.Infra.Data.Repositories
             var url = httpClient.BaseAddress
                     .AppendPathSegment("admin")
                     .AppendPathSegment("realms")
-                    .AppendPathSegment(tenant)
+                    .AppendPathSegment(_tenantService.Tenant.Name)
                     .AppendPathSegment("users");
-            
+
             var json = JsonConvert.SerializeObject(user, Settings);
             var httpContent = new StringContent(json, Encoding.UTF8, "application/json");
             using var response = await httpClient.PostAsync(url, httpContent, cancellationToken);
@@ -117,7 +116,7 @@ namespace Feijuca.Auth.Infra.Data.Repositories
             return Result<bool>.Failure(UserErrors.UserCreationError);
         }
 
-        public async Task<Result<User>> GetAsync(string tenant, string username, CancellationToken cancellationToken)
+        public async Task<Result<User>> GetAsync(string username, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(username))
             {
@@ -130,7 +129,7 @@ namespace Feijuca.Auth.Infra.Data.Repositories
             var url = httpClient.BaseAddress
                     .AppendPathSegment("admin")
                     .AppendPathSegment("realms")
-                    .AppendPathSegment(tenant)
+                    .AppendPathSegment(_tenantService.Tenant.Name)
                     .AppendPathSegment("users");
 
             url = url.SetQueryParam("username", username);
@@ -148,7 +147,7 @@ namespace Feijuca.Auth.Infra.Data.Repositories
             return Result<User>.Success(user[0]);
         }
 
-        public async Task<Result<bool>> ResetPasswordAsync(Guid id, string tenant, string password, CancellationToken cancellationToken)
+        public async Task<Result<bool>> ResetPasswordAsync(Guid id, string password, CancellationToken cancellationToken)
         {
             var tokenDetails = await _authRepository.GetAccessTokenAsync(cancellationToken);
             using var httpClient = CreateHttpClientWithHeaders(tokenDetails.Data.Access_Token);
@@ -156,7 +155,7 @@ namespace Feijuca.Auth.Infra.Data.Repositories
             var url = httpClient.BaseAddress
                     .AppendPathSegment("admin")
                     .AppendPathSegment("realms")
-                    .AppendPathSegment(tenant)
+                    .AppendPathSegment(_tenantService.Tenant.Name)
                     .AppendPathSegment("users")
                     .AppendPathSegment(id)
                     .AppendPathSegment("reset-password");
@@ -216,7 +215,7 @@ namespace Feijuca.Auth.Infra.Data.Repositories
             return Result.Failure(UserErrors.InvalidUserNameOrPasswordError);
         }
 
-        public async Task<Result<bool>> RevokeSessionsAsync(Guid id, CancellationToken cancellationToken)
+        public async Task<Result<bool>> RevokeSessionsByUserIdAsync(Guid id, CancellationToken cancellationToken)
         {
             var tokenDetails = await _authRepository.GetAccessTokenAsync(cancellationToken);
             using var httpClient = CreateHttpClientWithHeaders(tokenDetails.Data.Access_Token);
@@ -241,11 +240,36 @@ namespace Feijuca.Auth.Infra.Data.Repositories
             return Result<bool>.Failure(UserErrors.RevokeSessionsError);
         }
 
+        public async Task<Result<bool>> RevokeSessionAsync(string sessionId, CancellationToken cancellationToken)
+        {
+            var tokenDetails = await _authRepository.GetAccessTokenAsync(cancellationToken);
+            using var httpClient = CreateHttpClientWithHeaders(tokenDetails.Data.Access_Token);
+
+            var url = httpClient.BaseAddress!
+                .ToString()
+                .AppendPathSegment("admin")
+                .AppendPathSegment("realms")
+                .AppendPathSegment(_tenantService.Tenant.Name)
+                .AppendPathSegment("sessions")
+                .AppendPathSegment(sessionId);
+
+            using var result = await httpClient.DeleteAsync(url, cancellationToken);
+
+            if (result.IsSuccessStatusCode)
+            {
+                return Result<bool>.Success(true);
+            }
+
+            return Result<bool>.Failure(UserErrors.RevokeSessionsError);
+        }
+
+
         public async Task<Result<TokenDetails>> LoginAsync(string username, string password, CancellationToken cancellationToken)
         {
             using var httpClient = _httpClientFactory.CreateClient("KeycloakClient");
 
-            var urlGetToken = httpClient.BaseAddress.AppendPathSegment("realms")
+            var urlGetToken = httpClient.BaseAddress
+                .AppendPathSegment("realms")
                 .AppendPathSegment(_tenantService.Tenant.Name)
                 .AppendPathSegment("protocol")
                 .AppendPathSegment("openid-connect")
@@ -266,8 +290,28 @@ namespace Feijuca.Auth.Infra.Data.Repositories
 
             if (response.IsSuccessStatusCode)
             {
+                var userResult = await GetAsync(username, cancellationToken);
+
+                var userId = userResult.Data.Id;
+
+                var userSessionsResult = await GetUserSessionsAsync(userId, cancellationToken);
+
+                if (userSessionsResult.IsSuccess && userSessionsResult.Data.Any())
+                {
+                    var sessionsToRevoke = userSessionsResult.Data
+                        .OrderByDescending(s => s.Start)
+                        .Skip(1)
+                        .ToList();
+
+                    foreach (var session in sessionsToRevoke)
+                    {
+                        await RevokeSessionAsync(session.Id!, cancellationToken);
+                    }
+                }
+
                 var content = await response.Content.ReadAsStringAsync(cancellationToken);
                 var result = JsonConvert.DeserializeObject<TokenDetails>(content);
+
                 return Result<TokenDetails>.Success(result!);
             }
 
@@ -280,7 +324,8 @@ namespace Feijuca.Auth.Infra.Data.Repositories
         {
             using var httpClient = _httpClientFactory.CreateClient("KeycloakClient");
 
-            var urlGetToken = httpClient.BaseAddress.AppendPathSegment("realms")
+            var urlGetToken = httpClient.BaseAddress
+                .AppendPathSegment("realms")
                 .AppendPathSegment(_tenantService.Tenant.Name)
                 .AppendPathSegment("protocol")
                 .AppendPathSegment("openid-connect")
@@ -305,12 +350,12 @@ namespace Feijuca.Auth.Infra.Data.Repositories
             return Result<bool>.Failure(UserErrors.SignOutError);
         }
 
-        public async Task<Result<TokenDetails>> RefreshTokenAsync(string tenant, string refreshToken, CancellationToken cancellationToken)
+        public async Task<Result<TokenDetails>> RefreshTokenAsync(string refreshToken, CancellationToken cancellationToken)
         {
             using var httpClient = _httpClientFactory.CreateClient("KeycloakClient");
 
             var urlGetToken = httpClient.BaseAddress.AppendPathSegment("realms")
-                .AppendPathSegment(tenant)
+                .AppendPathSegment(_tenantService.Tenant.Name)
                 .AppendPathSegment("protocol")
                 .AppendPathSegment("openid-connect")
                 .AppendPathSegment("token");
@@ -342,6 +387,7 @@ namespace Feijuca.Auth.Infra.Data.Repositories
         public async Task<Result<bool>> UpdateUserAsync(Guid id, User user, CancellationToken cancellationToken)
         {
             var tokenDetails = await _authRepository.GetAccessTokenAsync(cancellationToken);
+
             using var httpClient = CreateHttpClientWithHeaders(tokenDetails.Data.Access_Token);
 
             var url = httpClient.BaseAddress
@@ -363,6 +409,32 @@ namespace Feijuca.Auth.Infra.Data.Repositories
             var responseMessage = await response.Content.ReadAsStringAsync(cancellationToken);
             UserErrors.SetTechnicalMessage(responseMessage);
             return Result<bool>.Failure(UserErrors.InvalidRefreshToken);
+        }
+
+        public async Task<Result<IEnumerable<KeycloakSession>>> GetUserSessionsAsync(Guid id, CancellationToken cancellationToken)
+        {
+            var tokenDetails = await _authRepository.GetAccessTokenAsync(cancellationToken);
+            using var httpClient = CreateHttpClientWithHeaders(tokenDetails.Data.Access_Token);
+
+            var url = httpClient.BaseAddress
+                .AppendPathSegment("admin")
+                .AppendPathSegment("realms")
+                .AppendPathSegment(_tenantService.Tenant.Name)
+                .AppendPathSegment("users")
+                .AppendPathSegment(id)
+                .AppendPathSegment("sessions");
+
+            using var response = await httpClient.GetAsync(url, cancellationToken);
+            var content = await response.Content.ReadAsStringAsync(cancellationToken);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                UserErrors.SetTechnicalMessage(content);
+                return Result<IEnumerable<KeycloakSession>>.Failure(UserErrors.GetUserSessionsError);
+            }
+
+            var sessions = JsonConvert.DeserializeObject<IEnumerable<KeycloakSession>>(content)!;
+            return Result<IEnumerable<KeycloakSession>>.Success(sessions);
         }
     }
 }
