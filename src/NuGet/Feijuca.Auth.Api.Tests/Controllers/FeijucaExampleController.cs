@@ -1,6 +1,6 @@
 ﻿using Feijuca.Auth.Attributes;
 using Feijuca.Auth.Models;
-using Feijuca.Auth.Services;
+using Feijuca.Auth.Providers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,7 +8,7 @@ namespace Feijuca.Auth.Api.Tests.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class FeijucaExampleController(ITenantService tenantService) : ControllerBase
+    public class FeijucaExampleController(ITenantProvider tenantService) : ControllerBase
     {
         [HttpGet("token-validation")]
         [Authorize]

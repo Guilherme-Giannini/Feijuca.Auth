@@ -1,8 +1,8 @@
 ﻿using Feijuca.Auth.Models;
 
-namespace Feijuca.Auth.Services;
+namespace Feijuca.Auth.Providers;
 
-public interface ITenantService
+public interface ITenantProvider
 {
     IEnumerable<Tenant> Tenants { get; }
 

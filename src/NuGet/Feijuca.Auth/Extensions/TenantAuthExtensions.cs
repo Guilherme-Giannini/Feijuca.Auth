@@ -1,5 +1,5 @@
 ﻿using Feijuca.Auth.Models;
-using Feijuca.Auth.Services;
+using Feijuca.Auth.Providers;
 using Keycloak.AuthServices.Authentication;
 using Keycloak.AuthServices.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -26,7 +26,7 @@ public static class TenantAuthExtensions
     {
         services
             .AddSingleton<JwtSecurityTokenHandler>()
-            .AddScoped<ITenantService, TenantService>()
+            .AddScoped<ITenantProvider, TenanatProvider>()
             .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddKeycloakWebApi(
                 options =>

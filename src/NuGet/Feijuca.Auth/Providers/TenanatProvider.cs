@@ -2,9 +2,9 @@
 using Microsoft.AspNetCore.Http;
 using System.IdentityModel.Tokens.Jwt;
 
-namespace Feijuca.Auth.Services;
+namespace Feijuca.Auth.Providers;
 
-public class TenantService(IHttpContextAccessor httpContextAccessor, JwtSecurityTokenHandler jwtSecurityTokenHandler) : ITenantService
+public class TenanatProvider(IHttpContextAccessor httpContextAccessor, JwtSecurityTokenHandler jwtSecurityTokenHandler) : ITenantProvider
 {
     private User _userId = null!;
 

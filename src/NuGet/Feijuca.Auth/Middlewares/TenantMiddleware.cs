@@ -1,4 +1,4 @@
-﻿using Feijuca.Auth.Services;
+﻿using Feijuca.Auth.Providers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 
@@ -7,7 +7,7 @@ namespace Feijuca.Auth.Middlewares
     public class TenantMiddleware(RequestDelegate next)
     {
 
-        public async Task InvokeAsync(HttpContext context, ITenantService tenantService)
+        public async Task InvokeAsync(HttpContext context, ITenantProvider tenantService)
         {
             var endpoint = context.GetEndpoint();
             var hasAuthorize = endpoint?.Metadata?.GetMetadata<AuthorizeAttribute>() != null;
