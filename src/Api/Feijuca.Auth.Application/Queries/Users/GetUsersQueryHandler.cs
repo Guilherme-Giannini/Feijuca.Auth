@@ -2,7 +2,6 @@
 using Mattioli.Configurations.Models;
 using Feijuca.Auth.Application.Mappers;
 using Feijuca.Auth.Domain.Interfaces;
-using MediatR;
 using Feijuca.Auth.Http.Responses;
 using Feijuca.Auth.Services;
 using Feijuca.Auth.Application.Responses;

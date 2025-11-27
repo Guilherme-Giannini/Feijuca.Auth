@@ -1,6 +1,5 @@
 ﻿using Feijuca.Auth.Domain.Interfaces;
 using LiteBus.Queries.Abstractions;
-using MediatR;
 
 namespace Feijuca.Auth.Application.Queries.Realm
 {

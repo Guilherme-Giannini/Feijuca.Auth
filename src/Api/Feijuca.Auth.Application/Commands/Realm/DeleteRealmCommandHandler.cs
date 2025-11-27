@@ -2,7 +2,6 @@
 using Feijuca.Auth.Domain.Interfaces;
 using LiteBus.Commands.Abstractions;
 using Mattioli.Configurations.Models;
-using MediatR;
 
 namespace Feijuca.Auth.Application.Commands.Realm
 {

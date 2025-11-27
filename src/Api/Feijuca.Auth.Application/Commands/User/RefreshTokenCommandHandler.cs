@@ -2,7 +2,6 @@
 using Mattioli.Configurations.Models;
 using Feijuca.Auth.Domain.Interfaces;
 using Feijuca.Auth.Http.Responses;
-using MediatR;
 using LiteBus.Commands.Abstractions;
 
 namespace Feijuca.Auth.Application.Commands.User

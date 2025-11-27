@@ -3,7 +3,6 @@ using Feijuca.Auth.Application.Responses;
 using Feijuca.Auth.Http.Responses;
 using LiteBus.Queries.Abstractions;
 using Mattioli.Configurations.Models;
-using MediatR;
 
 namespace Feijuca.Auth.Application.Queries.Users
 {

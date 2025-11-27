@@ -5,7 +5,6 @@ using Feijuca.Auth.Application.Requests.ClientScopes;
 using Feijuca.Auth.Attributes;
 using LiteBus.Commands.Abstractions;
 using LiteBus.Queries.Abstractions;
-using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

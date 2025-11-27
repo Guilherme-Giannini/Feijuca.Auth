@@ -1,7 +1,6 @@
 ﻿using Feijuca.Auth.Common.Errors;
 using Mattioli.Configurations.Models;
 using Feijuca.Auth.Domain.Interfaces;
-using MediatR;
 using Feijuca.Auth.Application.Responses;
 using LiteBus.Queries.Abstractions;
 
