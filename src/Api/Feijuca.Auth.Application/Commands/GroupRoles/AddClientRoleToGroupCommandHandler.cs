@@ -2,17 +2,18 @@
 using Mattioli.Configurations.Models;
 using Feijuca.Auth.Domain.Interfaces;
 using MediatR;
+using LiteBus.Commands.Abstractions;
 
 namespace Feijuca.Auth.Application.Commands.GroupRoles;
 
 public class AddClientRoleToGroupCommandHandler(IGroupRepository groupRepository, IGroupRolesRepository roleGroupRepository, IClientRoleRepository roleRepository) 
-    : IRequestHandler<AddClientRoleToGroupCommand, Result<bool>>
+    : ICommandHandler<AddClientRoleToGroupCommand, Result<bool>>
 {
     private readonly IGroupRepository _groupRepository = groupRepository;
     private readonly IGroupRolesRepository _roleGroupRepository = roleGroupRepository;
     private readonly IClientRoleRepository _roleRepository = roleRepository;
 
-    public async Task<Result<bool>> Handle(AddClientRoleToGroupCommand request, CancellationToken cancellationToken)
+    public async Task<Result<bool>> HandleAsync(AddClientRoleToGroupCommand request, CancellationToken cancellationToken)
     {
         var groupsResult = await _groupRepository.GetAllAsync(cancellationToken);
         var rolesResult = await _roleRepository.GetRolesForClientAsync(request.AddRoleToGroupRequest.ClientId, cancellationToken);

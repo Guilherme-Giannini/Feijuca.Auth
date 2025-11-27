@@ -1,13 +1,13 @@
 ﻿using Feijuca.Auth.Common.Errors;
 using Mattioli.Configurations.Models;
 using Feijuca.Auth.Domain.Interfaces;
-using MediatR;
+using LiteBus.Commands.Abstractions;
 
 namespace Feijuca.Auth.Application.Commands.ClientScopes
 {
-    public class AddClientScopeToClientCommandHandler(IClientScopesRepository clientScopesRepository) : IRequestHandler<AddClientScopeToClientCommand, Result<bool>>
+    public class AddClientScopeToClientCommandHandler(IClientScopesRepository clientScopesRepository) : ICommandHandler<AddClientScopeToClientCommand, Result<bool>>
     {
-        public async Task<Result<bool>> Handle(AddClientScopeToClientCommand request, CancellationToken cancellationToken)
+        public async Task<Result<bool>> HandleAsync(AddClientScopeToClientCommand request, CancellationToken cancellationToken)
         {
             var result = await clientScopesRepository.AddClientScopeToClientAsync(
                 request.AddClientScopeToClientRequest.ClientId, 

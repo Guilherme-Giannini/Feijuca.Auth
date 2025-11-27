@@ -2,6 +2,8 @@
 using Feijuca.Auth.Application.Queries.Realm;
 using Feijuca.Auth.Application.Requests.Realm;
 using Feijuca.Auth.Attributes;
+using LiteBus.Commands.Abstractions;
+using LiteBus.Queries.Abstractions;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -11,10 +13,8 @@ namespace Feijuca.Auth.Api.Controllers
     [Route("api/v1/realms")]
     [ApiController]
     [Authorize]
-    public class RealmsController(IMediator mediator) : ControllerBase
+    public class RealmsController(ICommandMediator commandMediator, IQueryMediator queryMediator) : ControllerBase
     {
-        private readonly IMediator _mediator = mediator;
-
         /// <summary>
         /// Retrieves all configs related to a realm.
         /// </summary>
@@ -32,7 +32,7 @@ namespace Feijuca.Auth.Api.Controllers
         [RequiredRole("Feijuca.ApiReader")]
         public async Task<IActionResult> ExportRealm([FromRoute] string name, CancellationToken cancellationToken)
         {
-            var result = await _mediator.Send(new GetRealmConfigurationQuery(name), cancellationToken);
+            var result = await queryMediator.QueryAsync(new GetRealmConfigurationQuery(name), cancellationToken);
 
             if (!string.IsNullOrEmpty(name))
             {
@@ -57,7 +57,7 @@ namespace Feijuca.Auth.Api.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> AddRealm([FromBody] AddRealmRequest realm, CancellationToken cancellationToken)
         {
-            var result = await _mediator.Send(new AddRealmsCommand([realm]), cancellationToken);
+            var result = await commandMediator.SendAsync(new AddRealmsCommand([realm]), cancellationToken);
 
             if (result.IsSuccess)
             {

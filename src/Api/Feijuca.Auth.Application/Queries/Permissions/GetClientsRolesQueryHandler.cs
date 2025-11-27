@@ -3,15 +3,16 @@ using Mattioli.Configurations.Models;
 using Feijuca.Auth.Domain.Interfaces;
 using MediatR;
 using Feijuca.Auth.Application.Responses;
+using LiteBus.Queries.Abstractions;
 
 namespace Feijuca.Auth.Application.Queries.Permissions
 {
-    public class GetClientsRolesQueryHandler(IClientRepository clientRepository, IClientRoleRepository roleRepository) : IRequestHandler<GetClientRolesQuery, Result<IEnumerable<ClientRoleResponse>>>
+    public class GetClientsRolesQueryHandler(IClientRepository clientRepository, IClientRoleRepository roleRepository) : IQueryHandler<GetClientRolesQuery, Result<IEnumerable<ClientRoleResponse>>>
     {
         private readonly IClientRepository _clientRepository = clientRepository;
         private readonly IClientRoleRepository _roleRepository = roleRepository;
 
-        public async Task<Result<IEnumerable<ClientRoleResponse>>> Handle(GetClientRolesQuery request, CancellationToken cancellationToken)
+        public async Task<Result<IEnumerable<ClientRoleResponse>>> HandleAsync(GetClientRolesQuery request, CancellationToken cancellationToken)
         {
             var result = await _clientRepository.GetClientsAsync(cancellationToken);
             if (result.IsSuccess)

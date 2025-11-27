@@ -34,7 +34,7 @@ namespace Feijuca.Auth.Api.UnitTests.Queries.Groups
                 .ReturnsAsync(groupsResult);
 
             // Act
-            var result = await _handler.Handle(request, cancellationToken);
+            var result = await _handler.HandleAsync(request, cancellationToken);
 
             // Assert
             result
@@ -59,7 +59,7 @@ namespace Feijuca.Auth.Api.UnitTests.Queries.Groups
                 .ReturnsAsync(groupsResult);
 
             // Act
-            var result = await _handler.Handle(request, cancellationToken);
+            var result = await _handler.HandleAsync(request, cancellationToken);
 
             // Assert
             result

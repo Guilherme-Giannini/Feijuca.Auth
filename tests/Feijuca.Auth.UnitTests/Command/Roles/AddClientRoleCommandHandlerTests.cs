@@ -31,7 +31,7 @@ namespace Feijuca.Auth.Api.UnitTests.Command.Roles
                 .ReturnsAsync(addRoleResult);
 
             // Act
-            var result = await _handler.Handle(addRoleCommand, cancellationToken);
+            var result = await _handler.HandleAsync(addRoleCommand, cancellationToken);
 
             // Assert
             result
@@ -55,7 +55,7 @@ namespace Feijuca.Auth.Api.UnitTests.Command.Roles
                 .ReturnsAsync(addRoleResult);
 
             // Act
-            var result = await _handler.Handle(addRoleCommand, cancellationToken);
+            var result = await _handler.HandleAsync(addRoleCommand, cancellationToken);
 
             // Assert
             result

@@ -1,5 +1,4 @@
 ﻿using Feijuca.Auth.Common.Errors;
-using Feijuca.Auth.Common.Extensions;
 using Mattioli.Configurations.Models;
 using Feijuca.Auth.Domain.Entities;
 using Feijuca.Auth.Domain.Filters;

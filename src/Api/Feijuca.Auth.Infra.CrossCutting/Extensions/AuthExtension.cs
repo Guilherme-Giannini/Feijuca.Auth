@@ -1,5 +1,4 @@
-﻿using Mattioli.Configurations.Models;
-using Feijuca.Auth.Domain.Interfaces;
+﻿using Feijuca.Auth.Domain.Interfaces;
 using Feijuca.Auth.Extensions;
 using Feijuca.Auth.Services;
 using Microsoft.Extensions.DependencyInjection;

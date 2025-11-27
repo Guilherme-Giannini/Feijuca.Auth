@@ -7,7 +7,6 @@ using Flurl;
 using Mattioli.Configurations.Models;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
-using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace Feijuca.Auth.Infra.Data.Repositories

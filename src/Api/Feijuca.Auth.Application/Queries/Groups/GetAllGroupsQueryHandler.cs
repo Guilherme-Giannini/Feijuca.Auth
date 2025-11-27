@@ -4,14 +4,15 @@ using Mattioli.Configurations.Models;
 using Feijuca.Auth.Domain.Interfaces;
 using MediatR;
 using Feijuca.Auth.Application.Responses;
+using LiteBus.Queries.Abstractions;
 
 namespace Feijuca.Auth.Application.Queries.Groups
 {
-    public class GetAllGroupsQueryHandler(IGroupRepository groupRepository) : IRequestHandler<GetAllGroupsQuery, Result<IEnumerable<GroupResponse>>>
+    public class GetAllGroupsQueryHandler(IGroupRepository groupRepository) : IQueryHandler<GetAllGroupsQuery, Result<IEnumerable<GroupResponse>>>
     {
         private readonly IGroupRepository _groupRepository = groupRepository;
 
-        public async Task<Result<IEnumerable<GroupResponse>>> Handle(GetAllGroupsQuery request, CancellationToken cancellationToken)
+        public async Task<Result<IEnumerable<GroupResponse>>> HandleAsync(GetAllGroupsQuery request, CancellationToken cancellationToken)
         {
             var result = await _groupRepository.GetAllAsync(cancellationToken);
 

@@ -34,7 +34,7 @@ namespace Feijuca.Auth.Api.UnitTests.Queries.Clients
                 .ReturnsAsync(clientsResult);
 
             // Act
-            var result = await _handler.Handle(clientsQuery, cancellationToken);
+            var result = await _handler.HandleAsync(clientsQuery, cancellationToken);
 
             // Assert
             result
@@ -58,7 +58,7 @@ namespace Feijuca.Auth.Api.UnitTests.Queries.Clients
                 .ReturnsAsync(clientsResult);
 
             // Act
-            var result = await _handler.Handle(clientsQuery, cancellationToken);
+            var result = await _handler.HandleAsync(clientsQuery, cancellationToken);
 
             // Assert
             result

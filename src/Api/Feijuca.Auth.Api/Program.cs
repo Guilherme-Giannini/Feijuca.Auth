@@ -4,7 +4,6 @@ using Feijuca.Auth.Infra.CrossCutting.Middlewares;
 using Mattioli.Configurations.Extensions.Handlers;
 using Mattioli.Configurations.Transformers;
 using Scalar.AspNetCore;
-using Mattioli.Configurations.Extensions.Telemetry;
 using Feijuca.Auth.Common.Models;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -20,7 +19,7 @@ var applicationSettings = builder.Configuration.ApplyEnvironmentOverridesToSetti
 builder.Services
     .AddExceptionHandler<GlobalExceptionHandler>()
     .AddProblemDetails()
-    .AddMediator()
+    .ConfigureLiteBus()
     .AddRepositories()
     .AddValidators()
     .AddServices()

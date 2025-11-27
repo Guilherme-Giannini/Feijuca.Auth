@@ -5,14 +5,13 @@ using Mattioli.Configurations.Models;
 using Feijuca.Auth.Domain.Interfaces;
 using Feijuca.Auth.Models;
 using Feijuca.Auth.Services;
-
-using MediatR;
+using LiteBus.Commands.Abstractions;
 
 namespace Feijuca.Auth.Application.Commands.Config
 {
-    public class AddOrUpdateConfigCommandHandler(IConfigRepository configRepository, ITenantService tenantService) : IRequestHandler<AddOrUpdateConfigCommand, Result<bool>>
+    public class AddOrUpdateConfigCommandHandler(IConfigRepository configRepository, ITenantService tenantService) : ICommandHandler<AddOrUpdateConfigCommand, Result<bool>>
     {
-        public async Task<Result<bool>> Handle(AddOrUpdateConfigCommand request, CancellationToken cancellationToken)
+        public async Task<Result<bool>> HandleAsync(AddOrUpdateConfigCommand request, CancellationToken cancellationToken)
         {
             bool result;
 

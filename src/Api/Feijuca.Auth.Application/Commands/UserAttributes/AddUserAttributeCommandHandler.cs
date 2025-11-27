@@ -1,15 +1,13 @@
 ﻿using Feijuca.Auth.Common.Errors;
 using Mattioli.Configurations.Models;
 using Feijuca.Auth.Domain.Interfaces;
-using Feijuca.Auth.Services;
-
-using MediatR;
+using LiteBus.Commands.Abstractions;
 
 namespace Feijuca.Auth.Application.Commands.UserAttributes
 {
-    public class AddUserAttributeCommandHandler(IUserRepository userRepository) : IRequestHandler<AddUserAttributeCommand, Result<bool>>
+    public class AddUserAttributeCommandHandler(IUserRepository userRepository) : ICommandHandler<AddUserAttributeCommand, Result<bool>>
     {
-        public async Task<Result<bool>> Handle(AddUserAttributeCommand request, CancellationToken cancellationToken)
+        public async Task<Result<bool>> HandleAsync(AddUserAttributeCommand request, CancellationToken cancellationToken)
         {
             var user = await userRepository.GetAsync(request.UserName, cancellationToken);
             if (user.IsSuccess)
