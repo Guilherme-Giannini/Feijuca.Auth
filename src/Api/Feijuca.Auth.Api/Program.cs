@@ -30,7 +30,7 @@ builder.Services
     .AddHealthCheckers(keycloakSettings)
     .AddEndpointsApiExplorer()
     .AddSwagger(keycloakSettings)
-    .AddHttpClients()    
+    .AddHttpClients()
     .ConfigureValidationErrorResponses()
     .AddCors(options =>
     {
@@ -48,24 +48,20 @@ var app = builder.Build();
 
 app.MapOpenApi();
 app.MapScalarApiReference(options => options.Servers = []);
-
-app.UseCors("AllowAllOrigins")
-   .UseExceptionHandler()
-   .UseSwagger()
-   .UseSwaggerUI(c =>
-   {
-       c.SwaggerEndpoint("/swagger/v1/swagger.json", "Feijuca.Auth.Api");
-   });
-
-if (keycloakSettings?.Realms?.Any() ?? false)
+app.UseRouting();
+app.UseCors("AllowAllOrigins");
+app.UseExceptionHandler();
+app.UseAuthentication();
+app.UseAuthorization();
+app.UseTenantMiddleware();
+app.UseMiddleware<ConfigValidationMiddleware>();
+app.UseHealthCheckers();
+app.UseHttpsRedirection();
+app.UseSwagger();
+app.UseSwaggerUI(c =>
 {
-    app.UseAuthorization()
-       .UseTenantMiddleware();
-}
-
-app.UseHttpsRedirection()
-   .UseMiddleware<ConfigValidationMiddleware>()
-   .UseHealthCheckers();
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Feijuca.Auth.Api");
+});
 
 app.MapControllers();
 
